@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Items - Admin Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        /* Navbar style */
+        .navbar {
+            background-color: #333;
+            color: #fff;
+            border-bottom: 1px solid #666;
+        }
+
+        .navbar-brand {
+            color: #fff;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .navbar-toggler-icon {
+            background-color: #fff;
+        }
+
+        .navbar-nav .nav-link {
+            color: #fff;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #ccc;
+        }
+
+        /* Sidebar style */
+        .sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #333;
+            padding-top: 50px;
+            margin-top: 4%;
+        }
+
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #fff;
+            display: block;
+        }
+
+        .sidebar a:hover {
+            background-color: #555;
+        }
+
+        /* Page content style */
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .btn-update {
+            background-color: #666;
+            color: #fff;
+        }
+
+        .btn-delete {
+            background-color: #666;
+            color: #fff;
+        }
+        footer {
+        padding: 20px 0;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">TnF Admin Dashboard</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="admin.html"><i class="fas fa-home"></i> Home</a>
+        <a href="inventory.html"><i class="fas fa-box"></i> Inventory</a>
+        <a href="bookings.html"><i class="fas fa-calendar-alt"></i> Bookings</a>
+        <a href="logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+
+    <!-- Address Details Modal -->
+    <div class="modal fade" id="itemModal" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="itemModalLabel">Item Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="item-details">
+                    <!-- Address details will be dynamically populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Page content -->
+    <div class="content">
+     
+        <h1>Items</h1>
+        <button class="btn btn-primary mb-3" id="addItemButton">Add Item</button>
+   
+        <table>
+            <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Update Item</th>
+                    <th>Delete Item</th>
+                </tr>
+            </thead>
+            <tbody id="item-table-body">
+                <!-- Item rows will be dynamically populated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container text-center">
+            <p>&copy; 2024 Admin Dashboard. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<!-- Font Awesome JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+ <script>
+    function showAlert(title, message, icon) {
+    swal({
+        title: title,
+        text: message,
+        icon: icon,
+        button: "OK",
+        background: "#f3f3f3" // Set background color to grey
+    });
+}
+    $(document).ready(function() {
+        // Load items from the API
+        $.ajax({
+            url: '/api/items',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                var itemsHtml = '';
+                data.forEach(function(item) {
+                    itemsHtml += '<tr>';
+                    itemsHtml += '<td>' + item.itemId + '</td>';
+                    itemsHtml += '<td><img src="data:image/jpeg;base64,' + item.imageBase64 + '" alt="' + item.name + '" style="max-width: 100px;"></td>';
+                    itemsHtml += '<td>' + item.name + '</td>';
+                    itemsHtml += '<td>' + item.description + '</td>';
+                    itemsHtml += '<td>' + item.quantity + '</td>';
+                    itemsHtml += '<td>R' + item.price + '</td>';
+                    // Add buttons for update and delete
+                    itemsHtml += '<td><button class="btn btn-update" data-id="' + item.itemId + '">Update</button></td>';
+                    itemsHtml += '<td><button class="btn btn-delete" data-id="' + item.itemId + '"><i class="fas fa-trash-alt"></i></button></td>';
+                    itemsHtml += '</tr>';
+                });
+                $('#item-table-body').html(itemsHtml);
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+               
+            }
+        });
+
+        // Handle click event for delete button
+        $(document).on('click', '.btn-delete', function() {
+            var itemId = $(this).data('id');
+            if (confirm("Are you sure you want to delete this item?")) {
+                $.ajax({
+                    url: '/api/items/' + itemId,
+                    type: 'DELETE',
+                    success: function(response) {
+                        showAlert('Item deleted successfully');
+                        // Refresh the page after deletion
+                        location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                        showAlert('Failed to delete item');
+                        
+                    }
+                });
+            }
+        });
+
+        $(document).on('click', '.btn-update', function () {
+    var itemId = $(this).data('id');
+
+    // Send AJAX request to fetch item details by ID
+    $.ajax({
+        url: "/api/items/" + itemId,
+        type: "GET",
+        success: function (item) {
+            if (item) {
+                // Construct HTML for item details form
+                var formHtml = '<form id="updateItemForm">';
+                formHtml += '<input type="hidden" id="itemId" name="itemId" value="' + item.itemId + '">';
+                formHtml += '<div class="form-group">';
+                formHtml += '<label for="itemName">Name:</label>';
+                formHtml += '<input type="text" class="form-control" id="itemName" name="name" value="' + item.name + '">';
+                formHtml += '</div>';
+                formHtml += '<div class="form-group">';
+                formHtml += '<label for="itemDescription">Description:</label>';
+                formHtml += '<textarea class="form-control" id="itemDescription" name="description">' + item.description + '</textarea>';
+                formHtml += '</div>';
+                formHtml += '<div class="form-group">';
+                formHtml += '<label for="itemQuantity">Quantity:</label>';
+                formHtml += '<input type="number" class="form-control" id="itemQuantity" name="quantity" value="' + item.quantity + '">';
+                formHtml += '</div>';
+                formHtml += '<div class="form-group">';
+                formHtml += '<label for="itemPrice">Price:</label>';
+                formHtml += '<input type="number" class="form-control" id="itemPrice" name="price" value="' + item.price + '">';
+                formHtml += '</div>';
+                // Add input for image upload
+                formHtml += '<div class="form-group">';
+                formHtml += '<label for="itemImage">Image:</label>';
+                formHtml += '<input type="file" class="form-control-file" id="itemImage" name="file">';
+                formHtml += '</div>';
+                formHtml += '<td><img src="data:image/jpeg;base64,' + item.imageBase64 + '" alt="' + item.name + '" style="max-width: 100px;"></td><br><br>';
+                   
+                formHtml += '<button type="submit" class="btn btn-primary">Update</button>';
+                formHtml += '</form>';
+
+                // Populate modal with item details form
+                $('#item-details').html(formHtml);
+                // Show the modal
+                $('#itemModal').modal('show');
+            } else {
+                // Handle case where no item is found
+                console.error("No item found for the ID:", itemId);
+                // Display message indicating no item found
+                $('#item-details').html('<p>No item found for the ID: ' + itemId + '</p>');
+                // Show the modal
+                $('#itemModal').modal('show');
+            }
+        },
+        error: function (xhr, status, error) {
+            // Handle error
+            console.error("Error fetching item:", error);
+            // Display error message
+            $('#item-details').html('<p>Error fetching item. Please try again later.</p>');
+            // Show the modal
+            $('#itemModal').modal('show');
+        }
+    });
+
+    // Handle submit event for the update form
+    $('#item-details').on('submit', '#updateItemForm', function (e) {
+        e.preventDefault();
+        // Serialize form data
+        var formData = new FormData(this);
+        var itemId = $('#itemId').val();
+        // Submit the form via AJAX
+        $.ajax({
+            url: '/api/items/' + itemId,
+            type: 'PUT',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                showAlert('Item updated successfully');
+                // Hide the modal
+                $('#itemModal').modal('hide');
+                // Optionally, refresh the page or update the item in the table dynamically
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+                showAlert('Item updated failed');
+            }
+        });
+    });
+});
+});
+
+
+    $(document).ready(function() {
+        // Add item button click event
+        $('#addItemButton').click(function() {
+            window.location.href = 'add_item.html';
+        });
+
+        $.ajax({
+            // AJAX request configuration
+        });
+    });
+</script>
+
+</body>
+
+</html>

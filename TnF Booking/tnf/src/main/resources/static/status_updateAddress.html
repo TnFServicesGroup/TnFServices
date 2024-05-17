@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootstrap with Forms</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<style>
+    .footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+
+        .footer p {
+            margin-bottom: 0;
+        }
+</style>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#">Shabz Booking Services</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Track Bookings</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2>Forms</h2>
+
+    <!-- First Form: User Information -->
+    <!-- Form to find booking by email -->
+    <form id="findBookingForm">
+        <div class="form-group">
+            <label for="email">Enter Email:</label>
+            <input type="text" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="findBookingByEmail()">Get Status</button>
+    </form>
+    <div id="bookingStatus"></div>
+
+    <hr>
+
+    <!-- Second Form: Address Information -->
+    <form id="getUserForm">
+        <div class="form-group">
+            <label for="email">Enter Email :</label>
+            <input type="text" class="form-control" id="email" name="email" placeholder="Enter your email then,click to get form to update address" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Get Update Form</button>
+    </form>
+
+    <div class="modal fade" id="addressModal" tabindex="-1" aria-labelledby="addressModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addressModalLabel">Update Address</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="addressModalBody">
+                    <!-- Address form goes here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Update User Information</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="userModalBody">
+                    <!-- User form goes here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+  
+
+</div>
+<footer class="footer mt-5">
+    <div class="container">
+        <p>&copy; 2024 TNFServicesInc. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+        <!-- Add interesting content or links here -->
+    </div>
+</footer>
+<!-- Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+ <script>
+    function showAlert(title, message, icon) {
+    swal({
+        title: title,
+        text: message,
+        icon: icon,
+        button: "OK",
+        background: "#f3f3f3" // Set background color to grey
+    });
+}
+
+function validateEmail(email) {
+        // Regular expression for email validation
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+        }
+    // Function to find booking by email
+    function findBookingByEmail() {
+        var email = document.getElementById("email").value;
+
+        // Validate email
+        if (!validateEmail(email)) {
+                showAlert("Please enter a valid email address.");
+                return false;
+            }
+        
+        // Send AJAX request to find booking by email
+        fetch(`/api/bookings/email/${email}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Check if data is an array and not empty
+                if (Array.isArray(data) && data.length > 0) {
+                    // Create a string to store booking details
+                    var bookingDetails = "Bookings:\n\n";
+                    
+                    // Loop through each booking and add details
+                    data.forEach(booking => {
+                        console.log(booking);
+                        bookingDetails += `
+                                            ID: ${booking.bookingId} \n 
+                                            Status: ${booking.status} \n
+                                            Created At: ${booking.createdAt} \n
+                                        `;
+                });
+                    
+                    // Display booking details in a popup
+                    showAlert(bookingDetails);
+                } else {
+                    // Display error message if no bookings found
+                    showAlert("Error: No bookings found for the given email");
+                }
+            })
+            .catch(error => {
+                console.error('Error finding bookings:', error);
+                // Display error message
+                showAlert("Failed to retrieve bookings");
+            });
+    }
+
+    // Function to handle submission of Get Address Form
+    document.getElementById("getUserForm").addEventListener("submit", function(event) {
+        event.preventDefault(); // Prevent the form from submitting traditionally
+
+        var email = document.getElementById("email").value;
+
+        // Validate email
+        if (!validateEmail(email)) {
+                showAlert("Please enter a valid email address.");
+                return false;
+            }
+
+        fetch(`/api/users/email/${email}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            var userForm = `
+                <form id="updateUserForm">
+                    <div class="form-group">
+                        <label for="name">Name:</label>
+                        <input type="text" class="form-control" id="name" name="name" value="${data.name}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="surname">Surname:</label>
+                        <input type="text" class="form-control" id="surname" name="surname" value="${data.surname}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" class="form-control" id="email" name="email" value="${data.email}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number:</label>
+                        <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" value="${data.phoneNumber}">
+                    </div>
+                    <div class="form-group">
+                            <input type="hidden" class="form-control" id="userId" name="userId" value="${data.userId}">
+                            <br>
+                            <a href="#" onclick="getAddressByUserId()">Update Address e.g </a>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update User</button>
+                </form>
+            `;
+
+            document.getElementById("userModalBody").innerHTML = userForm;
+            $('#userModal').modal('show');
+
+            document.getElementById("updateUserForm").addEventListener("submit", function(event) {
+                event.preventDefault();
+
+                var userId = document.getElementById("userId").value;
+                var updatedUser = {
+                    "name": document.getElementById("name").value,
+                    "surname": document.getElementById("surname").value,
+                    "email": document.getElementById("email").value,
+                    "phoneNumber": document.getElementById("phoneNumber").value
+                    // Add more fields as needed
+                };
+
+                fetch(`/api/users/update/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedUser)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    $('#userModal').modal('hide');
+                    showAlert("User updated successfully!");
+                })
+                .catch(error => {
+                    console.error('Error updating user:', error);
+                });
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching user:', error);
+        });
+        
+        
+    });
+
+    function getAddressByUserId() {
+        var userId = document.getElementById("userId").value;
+        
+        // Send AJAX request to get address by email
+        fetch(`/api/addresses/user-address/${userId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+            // Check if data is not empty
+            if (data.length > 0) {
+                // Assuming data is an array of addresses, select the first address
+                const address = data[0];
+
+                // Create a form with address details
+                var addressForm = `
+                    <form id="updateAddressForm">
+                        <div class="form-group">
+                            <label for="houseNumber">House Number:</label>
+                            <input type="text" class="form-control" id="houseNumber" name="houseNumber" value="${address.houseNumber}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="streetName">Street Name:</label>
+                            <input type="text" class="form-control" id="streetName" name="streetName" value="${address.streetName}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="city">City:</label>
+                            <input type="text" class="form-control" id="city" name="city" value="${address.city}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="postalCode">Postal Code:</label>
+                            <input type="text" class="form-control" id="postalCode" name="postalCode" value="${address.postalCode}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="province">Province:</label>
+                            <input type="text" class="form-control" id="province" name="province" value="${address.province}" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="hidden" class="form-control" id="email" name="email" value="${address.user.email}" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="hidden" class="form-control" id="addressId" name="addressId" value="${address.addressId}">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Address</button>
+                    </form>
+                `;
+                }
+                // Set the address form in the modal body
+                document.getElementById("addressModalBody").innerHTML = addressForm;
+                $('#addressModal').modal('show');
+                
+                // Add event listener for form submission
+                document.getElementById("updateAddressForm").addEventListener("submit", function(event) {
+                    event.preventDefault(); // Prevent the form from submitting traditionally
+
+                    var addressId = document.getElementById("addressId").value; // Retrieve the hidden ID value
+
+                    var updatedAddress = {
+                        
+                        "houseNumber": document.getElementById("houseNumber").value,
+                        "streetName": document.getElementById("streetName").value,
+                        "city": document.getElementById("city").value,
+                        "postalCode": document.getElementById("postalCode").value,
+                        "province": document.getElementById("province").value,
+                        "User": {
+                            "userId": document.getElementById("userId").value
+                        }
+                    };
+
+                    // Send AJAX request to update address
+                    fetch(`/api/addresses/update/${addressId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(updatedAddress)
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            // Close the modal dialog
+                            $('#addressModal').modal('hide');
+                            showAlert("Address updated successfully!");
+                        })
+                        .catch(error => {
+                            console.error('Error updating address:', error);
+                           
+                        });
+                })
+            .catch(error => {
+                console.error('Error fetching address:', error);
+            });
+       
+        });
+}
+</script>
+</body>
+</html>

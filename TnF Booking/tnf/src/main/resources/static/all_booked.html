@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookings - Admin Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        /* Navbar style */
+        .navbar {
+            background-color: #333;
+            color: #fff;
+            border-bottom: 1px solid #666;
+        }
+
+        .navbar-brand {
+            color: #fff;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .navbar-toggler-icon {
+            background-color: #fff;
+        }
+
+        .navbar-nav .nav-link {
+            color: #fff;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #ccc;
+        }
+
+        /* Sidebar style */
+        .sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #333;
+            padding-top: 50px;
+            margin-top: 4%;
+        }
+
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #fff;
+            display: block;
+        }
+
+        .sidebar a:hover {
+            background-color: #555;
+        }
+
+        /* Page content style */
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .btn-update,
+        .btn-delete,
+        .btn-get {
+            background-color: #666;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+
+        .btn-update:hover,
+        .btn-delete:hover,
+        .btn-get:hover {
+            background-color: #555;
+        }
+
+        footer {
+            padding: 20px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">TnF Admin Dashboard</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="admin.html"><i class="fas fa-home"></i> Home</a>
+        <a href="inventory.html"><i class="fas fa-box"></i> Inventory</a>
+        <a href="logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+
+    <!-- Page content -->
+    <div class="content">
+        <h1>Bookings</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>User</th>
+                    <th>Booked Item</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                    <th>Total Amount</th>
+                    <th>Update status</th>
+                    <th>Delete </th>
+                    <th>View Address Info</th>
+                </tr>
+            </thead>
+            <tbody id="booking-table-body">
+                <!-- Booking rows will be dynamically populated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Address Details Modal -->
+    <div class="modal fade" id="addressModal" tabindex="-1" role="dialog" aria-labelledby="addressModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addressModalLabel">Address Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="address-details">
+                    <!-- Address details will be dynamically populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container text-center">
+            <p>&copy; 2024 Admin Dashboard. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Font Awesome JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+    <script>
+       function showAlert(title, message, icon) {
+       swal({
+           title: title,
+           text: message,
+           icon: icon,
+           button: "OK",
+           background: "#f3f3f3" // Set background color to grey
+       });
+   }
+        $(document).ready(function () {
+            // Load bookings from the API
+            $.ajax({
+                url: '/api/bookings/status/Booked',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    var totalSales = 0; // Initialize total sales sum
+                    var bookingsHtml = '';
+
+                    data.forEach(function (booking) {
+                        // Add the booking amount to the total sales sum
+                        totalSales += booking.bookedItem.totalAmount;
+
+                        // Construct the booking row HTML
+                        
+                        bookingsHtml += '<tr>';
+                        bookingsHtml += '<td>' + booking.bookingId + '</td>';
+                        bookingsHtml += '<td>' + booking.user.name + '</td>';
+                        bookingsHtml += '<td>' + booking.bookedItem.item.name + '</td>';
+                        bookingsHtml += '<td>' +
+                            '<select class="form-control status-dropdown">' +
+                            '<option value="Booked"' + (booking.status === 'Booked' ? ' selected' : '') + '>Booked</option>' +
+                            '<option value="Out for Delivery"' + (booking.status === 'Out for Delivery' ? ' selected' : '') + '>Out for Delivery</option>' +
+                            '<option value="Delivered"' + (booking.status === 'Delivered' ? ' selected' : '') + '>Delivered</option>' +
+                            '<option value="Returned"' + (booking.status === 'Returned' ? ' selected' : '') + '>Returned</option>' +
+                            '</select>' +
+                            '</td>';
+                        bookingsHtml += '<td>' + booking.createdAt + '</td>';
+                        bookingsHtml += '<td>R' + booking.bookedItem.totalAmount + '</td>';
+                        bookingsHtml += '<td><button class="btn btn-update" data-id="' + booking.bookingId + '">Update</button></td>';
+                        bookingsHtml += '<td><button class="btn btn-delete" data-id="' + booking.bookingId + '">Delete</button></td>';
+                        bookingsHtml += '<td><button class="btn btn-get" data-user="' + booking.user.address.addressId + '" data-toggle="modal" data-target="#addressModal">Get Address</button></td>';
+                        bookingsHtml += '</tr>';
+                    });
+
+                    // Populate the booking rows
+                    $('#booking-table-body').html(bookingsHtml);
+                    // Insert the total sales sum under the Bookings heading in bold and with font size 35px
+                    $('h1').after('<div style="font-size: 23px; font-weight: bold;">Total Booking Sales: R' + totalSales + '</div>');
+
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                    showAlert("No bookings");
+                }
+            });
+
+            // Update status button click event
+            $(document).on('click', '.btn-update', function () {
+                var bookingId = $(this).data('id');
+                var selectedStatus = $(this).closest('tr').find('.status-dropdown').val();
+
+                // Send AJAX request to update booking status
+                $.ajax({
+                    url: '/api/bookings/' + bookingId + '/update-status?status=' + selectedStatus,
+                    type: 'PUT',
+                    success: function () {
+                        showAlert("Updated successfully");
+                        location.reload();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error(xhr.responseText);
+                        showAlert("Failed to update");
+                    }
+                });
+            });
+
+            // Delete button click event
+            $(document).on('click', '.btn-delete', function () {
+                var bookingId = $(this).data('id');
+                var btn = $(this); // Store $(this) in a variable
+
+                // Confirm deletion with user
+                if (confirm('Are you sure you want to delete this booking?')) {
+                    // Send AJAX request to delete booking
+                    $.ajax({
+                        url: '/api/bookings/' + bookingId,
+                        type: 'DELETE',
+                        success: function () {
+                            // Remove the row from the table upon successful deletion
+                            btn.closest('tr').remove(); // Use the stored variable here
+                            showAlert('Booking deleted successfully.');
+                        },
+                        error: function (xhr, status, error) {
+                            console.error(xhr.responseText);
+                            // Handle error here (e.g., display an error message)
+                            showAlert('Failed to delete booking. Please try again later.');
+                        }
+                    });
+                }
+            });
+
+            // Event listener for button click to get address details and display in modal
+            $(document).on('click', '.btn-get', function () {
+                // Get the email from the data attribute
+                var addressId = $(this).data('user');
+
+                // Send AJAX request to fetch address by email
+                $.ajax({
+                    url: "/api/addresses/" + addressId,
+                    type: "GET",
+                    success: function (address) {
+                        // Check if address is not null
+                        if (address) {
+                            // Construct HTML for address details
+                            var addressHtml = '<div class="row">';
+                            addressHtml += '<div class="col-md-6">';
+                            addressHtml += '<p><strong>House Number:</strong> ' + address.houseNumber + '</p>';
+                            addressHtml += '<p><strong>Street Name:</strong> ' + address.streetName + '</p>';
+                            addressHtml += '<p><strong>City:</strong> ' + address.city + '</p>';
+                            addressHtml += '</div>';
+                            addressHtml += '<div class="col-md-6">';
+                            addressHtml += '<p><strong>Postal Code:</strong> ' + address.postalCode + '</p>';
+                            addressHtml += '<p><strong>Province:</strong> ' + address.province + '</p>';
+                            addressHtml += '</div>';
+                            addressHtml += '</div>';
+
+                            // Populate modal with address details
+                            $('#address-details').html(addressHtml);
+                            // Show the modal
+                            $('#addressModal').modal('show');
+                        } else {
+                            // Handle case where no address is found
+                            console.error("No address found for the email:", email);
+                            // Display message indicating no address found
+                            $('#address-details').html('<p>No address found for the email: ' + email + '</p>');
+                            // Show the modal
+                            $('#addressModal').modal('show');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error
+                        console.error("Error fetching address:", error);
+                        // Display error message
+                        $('#address-details').html('<p>Error fetching address. Please try again later.</p>');
+                        // Show the modal
+                        $('#addressModal').modal('show');
+                    }
+                });
+            });
+        });
+    </script>
+
+
+</body>
+
+</html>

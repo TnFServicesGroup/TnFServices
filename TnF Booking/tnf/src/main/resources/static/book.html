@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Form</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+<!-- Custom CSS -->
+    <style>
+        /* Add your custom styles here */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .navbar {
+            background-color: #343a40;
+        }
+        .navbar-brand, .nav-link {
+            color: #fff !important;
+        }
+        .footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+
+        .footer p {
+            margin-bottom: 0;
+        }
+        .mastercard-message {
+            text-align: center; /* Center the message */
+            margin-top: 5%; /* 5% away from the top */
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* Background color */
+            padding: 15px; /* Padding around the content */
+         
+        }
+
+        .mastercard-message p {
+            font-size: 16px; /* Font size */
+            margin-bottom: 0; /* Remove default margin */
+        }
+
+        .mastercard-message .fab {
+            color: #0070ba; /* Mastercard icon color */
+            font-size: 30px; /* Icon size */
+            margin-right: 5px; /* Spacing between icon and text */
+        }
+         /* Custom styles for Sweet Alert */
+         .swal-overlay {
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        .swal-title {
+            color: #dc3545; /* Red color for error */
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .swal-text {
+            color: #333; /* Dark grey color for text */
+            font-size: 1.1rem;
+        }
+        .swal-button {
+            background-color: #dc3545; /* Red color for button */
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .swal-button:focus {
+            outline: none;
+        }
+        .swal-button:not([disabled]):hover {
+            background-color: #c82333; /* Darker red on hover */
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#">Sbhabz Booking Services</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="status_updateAddress.html">Track Bookings</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2>Booking Form</h2>
+
+    <!-- Display total amount -->
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <label for="total_amount">Total Amount:</label>
+            <input type="number" class="form-control" id="total_amount" name="total_amount" readonly>
+        </div>
+    </div>
+
+    <!-- First Form: User Information -->
+    <form id="userInformationForm">
+        <!-- User information fields -->
+        <div class="row">
+            <div class="col-md-6">
+                <label for="name">Name:</label>
+                <input type="text" class="form-control" id="name" name="name" required pattern="[A-Za-z ]+" title="Please enter only alphabets">
+            </div>
+            <div class="col-md-6">
+                <label for="surname">Surname:</label>
+                <input type="text" class="form-control" id="surname" name="surname" required pattern="[A-Za-z ]+" title="Please enter only alphabets">
+            </div>
+            <div class="col-md-6">
+                <label for="phone_number">Phone Number:</label>
+                <input type="text" class="form-control" id="phone_number" name="phone_number" required pattern="0[678]\d{8}" title="Please enter a valid South African phone number starting with 06, 07, or 08">
+            </div>
+            <div class="col-md-6">
+                <label for="email">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="row mt-3">
+            <div class="col-md-12 text-center">
+                <button type="button" class="btn btn-primary" onclick="submitUserInformation()">Next</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Second Form: Address Information -->
+    <form id="addressInformationForm" style="display: none;">
+        <!-- Address information fields -->
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label for="house_number">House Number:</label>
+                <input type="text" class="form-control" id="house_number" name="house_number" required pattern="\d+" title="Please enter only digits">
+            </div>
+            <div class="col-md-6">
+                <label for="street_name">Street Name:</label>
+                <input type="text" class="form-control" id="street_name" name="street_name" required pattern="[A-Za-z ]+" title="Please enter only alphabets">
+            </div>
+            <div class="col-md-6">
+                <label for="city">City:</label>
+                <input type="text" class="form-control" id="city" name="city" required pattern="[A-Za-z ]+" title="Please enter only alphabets">
+            </div>
+            <div class="col-md-6">
+                <label for="postal_code">Postal Code:</label>
+                <input type="text" class="form-control" id="postal_code" name="postal_code" required pattern="\d+" title="Please enter only digits">
+            </div>
+            <div class="col-md-6">
+                <label for="province">Province:</label>
+                <select class="form-control" id="province" name="province" required>
+                    <option value="">Select Province</option>
+                    <option value="Mpumalanga">Mpumalanga</option>
+                    <option value="Gauteng">Gauteng</option>
+                </select>
+            </div>
+        </div>
+        <!-- Submit Button -->
+        <div class="row mt-3">
+            <div class="col-md-12 text-center">
+                <button type="button" class="btn btn-primary" onclick="submitAddressInformation()">Next</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Third Form: Booking Information -->
+    <form id="bookingInformationForm" style="display: none;">
+        <!-- Booking information fields -->
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label for="quantity">Quantity:</label>
+                <input type="number" class="form-control" id="quantity" name="quantity" min="1" value="1" required>
+            </div>
+            <div class="col-md-6">
+                <label for="hire_date">Hire Date:</label>
+                <input type="date" class="form-control" id="hire_date" name="hire_date" required>
+            </div>
+            <div class="col-md-6">
+                <label for="return_date">Return Date:</label>
+                <input type="date" class="form-control" id="return_date" name="return_date" required>
+            </div>
+            
+        </div>
+        <!-- Submit Button -->
+        <div class="row mt-3">
+            <div class="col-md-12 text-center">
+                <button type="button" class="btn btn-primary" onclick="submitBookingInformation()">Submit</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Payment Form -->
+<form id="paymentInformationForm" style="display: none;">
+    <div class="row">
+        <div class="col-md-6">
+            <label for="card_holder">Card Holder:</label>
+            <input type="text" class="form-control" id="card_holder" name="card_holder">
+        </div>
+        <div class="col-md-12">
+            <label for="card_number">Card Number:</label>
+            <input type="text" class="form-control" id="card_number" name="card_number" pattern="[5][0-9]{9}" title="Please enter a valid card number starting with '5' and consisting of 10 digits." required>
+         </div>
+        <div class="col-md-6">
+            <label for="expiry_date">Expiry Date:</label>
+            <input type="text" class="form-control" id="expiry_date" name="expiry_date" pattern="\d{2}/\d{2}" title="Please enter a valid expiry date in the format 'MM/YY'." placeholder="MM/YY" required>
+        </div>
+        <div class="col-md-6">
+            <label for="cvv">CVV:</label>
+            <input type="text" class="form-control" id="cvv" name="cvv" pattern="\d{3}" title="Please enter a valid CVV consisting of 3 digits." required>
+        </div>
+    </div>
+    <!-- Submit Button -->
+    <div class="row mt-3">
+        <div class="col-md-12 text-center">
+            <button type="button" class="btn btn-primary" onclick="submitPaymentInformation()">Submit Payment</button>
+        </div>
+    </div>
+</form>
+
+    
+</div>
+
+<div class="mastercard-message">
+    <p>We accept <i class="fab fa-cc-mastercard"></i> Mastercard</p>
+</div>
+<br>
+<br>
+<br>
+<br>
+
+<footer class="footer mt-5">
+    <div class="container">
+        <p>&copy; 2024 TNFServicesInc. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+        <!-- Add interesting content or links here -->
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+ <script>
+    function showAlert(title, message, icon) {
+    swal({
+        title: title,
+        text: message,
+        icon: icon,
+        button: "OK",
+        background: "#f3f3f3" // Set background color to grey
+    });
+}
+    function validateEmail(email) {
+        // Regular expression for email validation
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+        }
+    function calculateTotalAmount() {
+        // Get quantity
+        var quantity = parseInt(document.getElementById("quantity").value);
+
+        // Get hire date and return date
+        var hireDate = document.getElementById("hire_date").value;
+        var returnDate = document.getElementById("return_date").value;
+
+        // Initialize dateDifference to 1 if both hire date and return date are provided
+        // This will avoid issues when subtracting dates
+        var dateDifference = 1;
+
+        // Calculate date difference in days only if hire date and return date are provided
+        if (hireDate && returnDate) {
+            hireDate = new Date(hireDate);
+            returnDate = new Date(returnDate);
+            dateDifference = Math.ceil((returnDate - hireDate) / (1000 * 60 * 60 * 24));
+        }
+
+        // Get item price from URL parameters
+        var urlParams = new URLSearchParams(window.location.search);
+        var itemPrice = parseFloat(urlParams.get('item_price'));
+
+        // Calculate total amount
+        var totalAmount;
+        if (hireDate && returnDate) {
+            totalAmount = itemPrice * quantity * dateDifference;
+        } else {
+            totalAmount = itemPrice * quantity;
+        }
+
+        // Display total amount
+        document.getElementById("total_amount").value = totalAmount.toFixed(2);
+    }
+
+    // Call calculateTotalAmount when item, quantity, hire date, or return date changes
+    document.getElementById("quantity").addEventListener("input", calculateTotalAmount);
+    document.getElementById("hire_date").addEventListener("input", calculateTotalAmount);
+    document.getElementById("return_date").addEventListener("input", calculateTotalAmount);
+
+    // Initial calculation when the page loads
+    calculateTotalAmount();
+    
+        function submitUserInformation() {
+            var name = document.getElementById("name").value;
+            var surname = document.getElementById("surname").value;
+            var phoneNumber = document.getElementById("phone_number").value;
+            var email = document.getElementById("email").value;
+
+            // Validate user information
+            if (name === "" || surname === "" || phoneNumber === "" || email === "") {
+                showAlert("Please fill in all user information fields.");
+                return; // Stop execution if validation fails
+            }
+
+            // Validate name and surname to contain alphabets only
+            if (!name.match(/^[A-Za-z]+$/) || !surname.match(/^[A-Za-z]+$/)) {
+                showAlert("Name and surname must contain alphabets only.");
+                return; // Stop execution if validation fails
+            }
+            // Validate phone number
+            if (!phoneNumber.match(/^0[678]\d{8}$/)) {
+                showAlert("Please enter a valid South African phone number starting with 06, 07, or 08.");
+                return; // Stop execution if validation fails
+            }
+
+            // Validate email
+            if (!validateEmail(email)) {
+                showAlert("Please enter a valid email address.");
+                return false;
+            }
+
+            var userData = {
+                "name": name,
+                "surname": surname,
+                "phoneNumber": phoneNumber,
+                "email": email
+            };
+
+
+            // Send POST request to UserController
+            fetch('/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('User data submitted:', data);
+                // Hide user information form
+                document.getElementById("userInformationForm").style.display = "none";
+                // Display address information form
+                document.getElementById("addressInformationForm").style.display = "block";
+            })
+            .catch(error => {
+                console.error('Error submitting user data:', error);
+                // Handle error if needed
+            });}
+
+            function submitAddressInformation() {
+    // Get the entered address information from the form
+    var houseNumber = document.getElementById("house_number").value;
+    var streetName = document.getElementById("street_name").value;
+    var city = document.getElementById("city").value;
+    var postalCode = document.getElementById("postal_code").value;
+    var province = document.getElementById("province").value;
+
+    if (houseNumber === "" || streetName === "" || city === "" || postalCode === "" || province === "") {
+        showAlert("Please fill in all address information fields.");
+            return false;
+        }
+
+      // Validate name and surname to contain alphabets only
+      if (!streetName.match(/^[A-Za-z\s]+$/) || !city.match(/^[A-Za-z\s]+$/)) {
+        showAlert("Street name and City must contain alphabets and spaces only.");
+            return; // Stop execution if validation fails
+        }
+    // Validate house number
+    if (isNaN(houseNumber)) {
+        showAlert("House number must be a number.");
+            return false;
+        }
+
+        // Validate postal code
+    if (isNaN(postalCode)) {
+            alert("Postal code must be a number.");
+            return false;
+        }
+    // Construct the address data without including the user object
+    var addressData = {
+        "houseNumber": houseNumber,
+        "streetName": streetName,
+        "city": city,
+        "postalCode": postalCode,
+        "province": province
+    };
+
+    // Send POST request to AddressController
+    fetch('/api/addresses', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(addressData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Address data submitted:', data);
+        // Hide address information form
+        document.getElementById("addressInformationForm").style.display = "none";
+        // Display booking information form
+        document.getElementById("bookingInformationForm").style.display = "block";
+    })
+    .catch(error => {
+        console.error('Error submitting address data:', error);
+        // Handle error if needed
+    });
+}
+
+function submitBookingInformation() {
+    // Gather form data
+    const quantity = document.getElementById("quantity").value;
+    const hireDate = document.getElementById("hire_date").value;
+    const returnDate = document.getElementById("return_date").value;
+    const totalAmount = document.getElementById("total_amount").value; // Get total amount from input field
+    
+     // Get the current date
+     var currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to zero for accurate comparison
+
+    if (quantity === "" || hireDate === "" || returnDate === "") {
+        showAlert("Please fill in all booking information fields.");
+        return false;
+    }
+
+    // Validate quantity
+    if (isNaN(quantity) || quantity < 1) {
+        showAlert("Quantity must be a positive number.");
+        return false;
+    }
+
+    // Parse dates to compare
+    var parsedHireDate = new Date(hireDate);
+    var parsedReturnDate = new Date(returnDate);
+
+    // Check if hire date is before current date
+    if (parsedHireDate < currentDate) {
+        showAlert("Hire date cannot be before the current date.");
+        return false;
+    }
+
+    // Check if return date is before hire date or before current date
+    if (parsedReturnDate < parsedHireDate || parsedReturnDate < currentDate) {
+        showAlert("Return date cannot be before the hire date or before the current date.");
+        return false;
+    }
+    // Create JSON object
+    const formData = {
+        "item": null,
+        "quantity": parseInt(quantity),
+        "hireDate": hireDate,
+        "returnDate": returnDate,
+        "totalAmount": totalAmount
+    };
+
+    // Make AJAX request
+    fetch('/api/booked-items', {  
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log(data); // Handle successful response from server
+        // Hide booking information form and display payment information form
+        document.getElementById("bookingInformationForm").style.display = "none";
+        document.getElementById("paymentInformationForm").style.display = "block";
+    })
+    .catch(error => {
+        console.error('There was a problem with your fetch operation:', error);
+    });
+}
+
+
+    function submitPaymentInformation() {
+ 
+        var cardHolder = document.getElementById("card_holder").value;
+        var cardNumber = document.getElementById("card_number").value;
+        var expiryDate = document.getElementById("expiry_date").value;
+        var cvv = document.getElementById("cvv").value;
+        if (cardHolder === "" || cardNumber === "" || expiryDate === "" || cvv === "") {
+            showAlert("Please fill in all payment information fields.");
+            return false;
+        }
+
+        // Validate card number
+        if (!cardNumber.match(/^5[0-9]{9}$/)) {
+            showAlert("Please enter a valid card number starting with '5' and consisting of 10 digits.");
+            return false;
+        }
+
+        // Validate expiry date
+        if (!expiryDate.match(/^\d{2}\/\d{2}$/)) {
+            showAlert("Please enter a valid expiry date in the format 'MM/YY'.");
+            return false;
+        }
+
+        // Validate CVV
+        if (!cvv.match(/^\d{3}$/)) {
+            showAlert("Please enter a valid CVV consisting of 3 digits.");
+            return false;
+        }
+
+        showAlert("Payment submitted successfully!");
+    // Optionally, redirect the user or perform other actions
+
+     // Prepare the payment data
+     const paymentData = {
+        "user": null,
+        "createdAt": null,
+        "bookedItem": null,
+        "status": "Booked"
+        // Add payment details if needed
+    };
+
+    // Make AJAX request to the controller endpoint
+    fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(paymentData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log(data); // Handle successful response from server
+        // Once payment is successful, submit the booking information form
+        window.location.href = 'index.html';
+    })
+    .catch(error => {
+        console.error('There was a problem with your fetch operation:', error);
+        // Handle error if needed
+    });
+}
+
+    </script>
+</body>
+</html>
